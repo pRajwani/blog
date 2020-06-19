@@ -1,8 +1,9 @@
-var mongo = require('mongoose')
-var schema = mongo.Schema
-var comment = new schema({
-    Author : {
-        type : mongo.Schema.Types.ObjectId,
+var mongoose = require('mongoose')
+var schema = mongoose.Schema
+
+var commentSchema = new schema({
+    commentAuthor : {
+        type : mongoose.Schema.Types.ObjectId,
         ref : 'User'
     },
     Comment : {
@@ -10,27 +11,25 @@ var comment = new schema({
         required:true
     }
 })
-var post = new schema( {
-    title : {
+
+var postSchema = new schema({
+    Title : {
         type:String,
         required:true
     },
-    Author : {
-        type:mongo.Schema.Types.ObjectId,
+    postAuthor : {
+        type:mongoose.Schema.Types.ObjectId,
         ref:'User'
     },
     Description : {
         type:String,
         required:true
-    }
-    ,
+    },
+    Comments : [commentSchema]
     // like : {
     //     type:String,
     //     required:true
     // },
-    comment : [
-        comment
-    ]
     // image : {
     //     type:String,
     //     required:true
@@ -39,4 +38,6 @@ var post = new schema( {
     {timeStamp : true}
 )
 
-module.exports = mongo.model('Post',post)
+var post = mongoose.model('Post', postSchema);
+
+module.exports = post;

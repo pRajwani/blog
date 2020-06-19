@@ -1,10 +1,12 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var mongo = require('mongoose');
-var authenticate = require('../authenticate');
 var passport = require('passport');
+
+var authenticate = require('../authenticate');
 var User = require('../model/user');
+
 var router = express.Router();
+
 router.use(bodyParser.json());
 
 /* GET users listing. */
@@ -17,6 +19,8 @@ router.get('/', function(req, res, next) {
   },(err)=>next(err))
   .catch((err)=>next(err))
 });
+
+//routes for /users/register
 router.route('/register')
 .get((req,res)=>{
   res.render('register')
@@ -37,30 +41,29 @@ router.route('/register')
   },(err)=>next(err))
   .catch((err)=>next(err))
 })
-router.post('/login',(req,res,next)=>{
-  passport.authenticate('local', (err,user,info)=>{
+
+//router for /user/login
+router.post('/login',(req,res,next)=> {
+  passport.authenticate('local', (err,user,info)=> {
     if(err)
     return next(err);
-
     if(!user){
       res.statusCode=401;
       res.setHeader('Content-Type','application/json');
       res.json({success:false,status:'Login Unsuccessfull',err:'Could not log-in'});
-
     }
-    req.logIn(user, (err)=>{
-      if(err){
+    req.logIn(user, (err)=> {
+      if(err) {
         res.statusCode=401;
         res.setHeader('Content-Type','application/json');
         res.json({success: false, status: 'Login Unsuccessful!',err: 'Could not log in user'});
       }
-
-    var token = authenticate.getToken({_id:req.user._id});
-    res.statusCode=200;
-    res.setHeader('Content-Type','application/json');
-    res.json({success:true,status:"Logged in",token:token});
-  })
-})(req,res,next)
+      var token = authenticate.getToken({_id:req.user._id});
+      res.statusCode=200;
+      res.setHeader('Content-Type','application/json');
+      res.json({success:true,status:"Logged in",token:token});
+    })
+  }) (req,res,next)
 })
 
 module.exports = router;
