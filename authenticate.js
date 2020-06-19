@@ -21,10 +21,10 @@ opts.secretOrKey = secretKey;
 exports.jwtPassport= passport.use(new JwtStrategy(opts,(jwt_payload,done)=>{
     console.log("JWT Payload:" , jwt_payload);
     User.findOne({_id:jwt_payload._id},(err,user)=>{
-        if(err){
+        if(err) {
             return done(err, false);
         }
-        else if(user){
+        else if(user) {
             return done(null,user);
         }
         else {
