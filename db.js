@@ -1,6 +1,11 @@
-const mongo = require('mongoose')
-const url = 'mongodb://localhost:27017/blog-web'
-const connect = mongo.connect(url)
-connect.then((p)=>{
-    console.log('connected')
-},(err)=>next(err))
+const mongoose = require('mongoose');
+const uri = "mongodb+srv://Veteran:veteran123@vet-mox41.mongodb.net/blog-web?retryWrites=true&w=majority";
+mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}, (err) => { if(err) console.log(err) })
+.catch((err)=> console.log(err))
+.then(()=>{
+    console.log("Connected to Database");
+}, (err) => console.log(err))
+.catch((err) => console.log(err));
