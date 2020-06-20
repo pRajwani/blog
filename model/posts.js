@@ -11,6 +11,9 @@ var commentSchema = new schema({
         required:true
     }
 })
+/*var likeSchema = new schema({
+    likeAuthor :
+})*/
 
 var postSchema = new schema({
     Title : {
@@ -25,17 +28,17 @@ var postSchema = new schema({
         type:String,
         required:true
     },
-    Comments : [commentSchema]
-    // like : {
-    //     type:String,
-    //     required:true
-    // },
+    Comments : [commentSchema],
+    likes : [ {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     // image : {
     //     type:String,
     //     required:true
     // }
 },
-    {timeStamp : true}
+    {timestamps : true}
 )
 
 var post = mongoose.model('Post', postSchema);

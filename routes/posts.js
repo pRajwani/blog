@@ -213,5 +213,63 @@ router.route('/:postId/comment/:commentId')
     }, (err)=> next(err))
     .catch((err)=> next(err));
 })
+//Router for /post/:postId/like
+router.route('/:postId/like')
+.get((req,res,next)=>{
+    Posts.findById(req.params.postId)
+    .then((post)=>{
+        res.statusCode=200;
+        res.setHeader('Content-Type','application/json');
+        res.json(post.likes.length);
+    },(err)=>next(err))
+    .catch((err)=>next(err))
+})
+.post(authenticate.verifyUser,(req,res,next)=>{
+        //req.body.likeAuthor=req.user.id;
+        //console.log(req.body.likeAuthor);
+        Posts.findById(req.params.postId)
+        
+        .then((post)=>{
+            if(post.likes.indexOf(req.user._id)==-1){
+            
+            post.likes.push(req.user._id)
+            post.save()
+            .then((post)=>{
+                res.statusCode=200;
+                res.setHeader('Content-Type','application/json');
+                res.json(post.likes);
+            },(err)=>next(err))
+            .catch((err)=>next(err))
+            }
+            else{
+                res.end('You\'ve already liked the post');
+            }
+        },(err)=>next(err))
+        .catch((err)=>next(err))
+
+})
+.delete(authenticate.verifyUser,(req,res,next)=>{
+       // req.body.likeAuthor=req.user.id;
+        Posts.findById(req.params.postId)
+        .populate('likes.likeAuthor')
+        .then((post)=>{
+            console.log(post.likes.indexOf(req.user._id));
+                if(post.likes.indexOf(req.user._id)>=0){
+                    var i = post.likes.indexOf(req.user._id);
+                    post.likes.splice(i,1);
+                    post.save()
+                    .then((post)=>{
+                        res.statusCode=200;
+                        res.setHeader('Content-Type','application/json');
+                        res.json(post.likes.length);
+                    },(err)=>next(err))
+                    .catch((err)=>next(err))
+                }
+                else{
+                    res.end('You have not liked the post');
+                }
+        },(err)=>next(err))
+        .catch((err)=>next(err))
+})
 
 module.exports = router;
