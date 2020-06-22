@@ -33,6 +33,14 @@ var postSchema = new schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
+    Category: {
+        type: String,
+        required: true
+    },
+    View: {
+        type: Number,
+        default: 0
+    }
     // image : {
     //     type:String,
     //     required:true

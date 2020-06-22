@@ -1,4 +1,5 @@
 //node Modules
+var cors = require('./cors')
 var express = require('express');
 var bodyParser = require('body-parser');
 
@@ -13,7 +14,10 @@ router.use(bodyParser.json());
 //routes for /post
 router.route('/')
 //To get all the posts
-.get((req,res,next)=> {
+.options(cors.corsOption,(req,res)=>{
+    res.sendStatus(200)
+})
+.get(cors.cors,(req,res,next)=> {
     Posts.find({})
     .then((posts)=>{
         res.statusCode = 200;
@@ -23,10 +27,8 @@ router.route('/')
     .catch((err)=>next(err));
 })
 //To post a single Post
-.post(authenticate.verifyUser, (req,res,next)=> {
+.post(cors.corsOption,authenticate.verifyUser, (req,res,next)=> {
     req.body.postAuthor=req.user._id;
-    console.log(req.body.postAuthor);
-    console.log(req.body);
     Posts.create(req.body)
     .then((post)=>{
         res.statusCode = 200;
@@ -41,7 +43,7 @@ router.route('/')
     res.end("PUT operation not supported on /post")
 })
 //To Delete all the Post
-.delete(authenticate.verifyUser, authenticate.verifyAdmin,(req,res,next)=> {
+.delete(cors.corsOption,authenticate.verifyUser, authenticate.verifyAdmin,(req,res,next)=> {
     Posts.remove({})
     .then((resp)=>{
         res.statusCode = 200;
@@ -54,14 +56,22 @@ router.route('/')
 //routes for /post/:postId
 router.route('/:postId')
 //To get a specific post using postId
-.get((req,res,next)=> {
+.options(cors.corsOption,(req,res)=>{
+    res.sendStatus(200)
+})
+.get(cors.cors,(req,res,next)=> {
     Posts.findById(req.params.postId)
     .populate('Comments.commentAuthor')
     .populate('postAuthor')
     .then((posts)=>{
-        res.statusCode = 200;
-        res.setHeader('Content-Type','application/json');
-        res.json(posts);
+        posts.View += 1;
+        posts.save()
+        .then((post)=>{
+            res.statusCode = 200;
+            res.setHeader('Content-Type','application/json');
+            res.json(post);
+        },(err)=>next(err))
+        .catch((err)=>next(err));
     },(err)=>next(err))
     .catch((err)=>next(err));
 })
@@ -71,7 +81,7 @@ router.route('/:postId')
     res.end('POST operation is not supported on /post/:postId')
 })
 //To Update a Post using postId
-.put(authenticate.verifyUser,(req,res,next)=> {
+.put(cors.corsOption,authenticate.verifyUser,(req,res,next)=> {
     Posts.findById(req.params.postId)
     .populate('postAuthor')
     .then((posts)=>{
@@ -84,11 +94,16 @@ router.route('/:postId')
             },(err)=>next(err))
             .catch((err)=>next(err))
         }
+        else{
+            error = new Error('You are not authorized');
+            error.status = 403;
+            next(error)
+        }
     },(err)=>next(err))
     .catch((err)=>next(err))
 })
 //To Delete a Post using postId
-.delete(authenticate.verifyUser,(req,res,next)=> {
+.delete(cors.corsOption,authenticate.verifyUser,(req,res,next)=> {
     Posts.findById(req.params.postId)
     .then((posts)=>{
         if(posts.Author == req.user.id) {
@@ -109,7 +124,10 @@ router.route('/:postId')
 //routes for /post/postId/comment
 router.route('/:postId/comment')
 //To get all the comments of a specific Post
-.get((req,res,next)=> {
+.options(cors.corsOption,(req,res)=>{
+    res.sendStatus(200)
+})
+.get(cors.cors,(req,res,next)=> {
     Posts.findById(req.params.postId)
     .populate('Comments.commentAuthor')
     .then((post)=> {
@@ -120,7 +138,7 @@ router.route('/:postId/comment')
     .catch((err)=> next(err));
 })
 //To post a comment on a post
-.post(authenticate.verifyUser,(req,res,next)=> {
+.post(cors.corsOption,authenticate.verifyUser,(req,res,next)=> {
     Posts.findById(req.params.postId)
     .then((post)=> {
         req.body.commentAuthor = req.user.id;
@@ -141,7 +159,7 @@ router.route('/:postId/comment')
     res.end('PUT operation is not supported on /post/:postId/comment')
 })
 //To delete all the comments in the post
-.delete(authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=> {
+.delete(cors.corsOption,authenticate.verifyUser,authenticate.verifyAdmin,(req,res,next)=> {
     Posts.findByIdAndDelete(req.params.postId)
     .then((post)=>{
         post.Coments.remove()
@@ -158,7 +176,10 @@ router.route('/:postId/comment')
 //routes for /post/:postId/comment/:commentId
 router.route('/:postId/comment/:commentId')
 //To get a specific comment in a post
-.get(authenticate.verifyUser,(req,res,next)=> {
+.options(cors.corsOption,(req,res)=>{
+    res.sendStatus(200)
+})
+.get(cors.cors,authenticate.verifyUser,(req,res,next)=> {
     Posts.findById(req.params.postId)
     .populate('Comments.commentAuthor')
     .then((post)=>{
@@ -166,6 +187,16 @@ router.route('/:postId/comment/:commentId')
             res.statusCode = 200;
             res.setHeader('Content-Type','application/json');
             res.json(post.Comments.id(req.params.commentId))
+        }
+        else if(post==null){
+            error = new Error('Post does not exist')
+            res.status = 404
+            next(error)
+        }
+        else{
+            error = new Error('Comment does not exist')
+            res.status = 404
+            next(error)
         }
     },(err)=>next(err))
     .catch((err)=>next(err))
@@ -175,7 +206,7 @@ router.route('/:postId/comment/:commentId')
     res.end('POST operation is not supported on /post/:postId/comment/:commentId')
 })
 //To update a specific comment of a specific post
-.put(authenticate.verifyUser,(req,res,next)=> {
+.put(cors.corsOption,authenticate.verifyUser,(req,res,next)=> {
     Posts.findById(req.params.postId)
     .populate('Comments.commentAuthor')
     .then((post)=>{
@@ -190,11 +221,16 @@ router.route('/:postId/comment/:commentId')
             }, (err)=> next(err))
             .catch((err)=> next(err));
         }
+        else{
+            error = new Error('You are not authorized');
+            error.status = 403;
+            next(error)
+        }
     }, (err)=> next(err))
     .catch((err)=> next(err));
 })
 //To delete a specific comment in a specific post
-.delete(authenticate.verifyUser,(req,res,next)=> {
+.delete(cors.corsOption,authenticate.verifyUser,(req,res,next)=> {
     Posts.findById(req.params.postId)
     .populate('Comments.commentAuthor')
     .then((posts)=>{
@@ -209,6 +245,21 @@ router.route('/:postId/comment/:commentId')
                 }, (err)=> next(err))
                 .catch((err)=> next(err));
             }
+            else{
+                error = new Error('You are not authorized');
+                error.status = 403;
+                next(error)
+            }
+        }
+        else if(post==null){
+            error = new Error('Post does not exist')
+            res.status = 404
+            next(error)
+        }
+        else{
+            error = new Error('Comment does not exist')
+            res.status = 404
+            next(error)
         }
     }, (err)=> next(err))
     .catch((err)=> next(err));
@@ -216,7 +267,10 @@ router.route('/:postId/comment/:commentId')
 //Router for /post/:postId/like
 router.route('/:postId/like')
 //To get the likes count of a specific post
-.get((req,res,next)=> {
+.options(cors.corsOption,(req,res)=>{
+    res.sendStatus(200)
+})
+.get(cors.cors,(req,res,next)=> {
     Posts.findById(req.params.postId)
     .then((post)=> {
         res.statusCode = 200;
@@ -226,7 +280,7 @@ router.route('/:postId/like')
     .catch((err)=> next(err));
 })
 //To post a like on a specific post
-.post(authenticate.verifyUser, (req,res,next)=> {
+.post(cors.corsOption,authenticate.verifyUser, (req,res,next)=> {
     Posts.findById(req.params.postId)
     .then((post)=> {
         if(post.likes.indexOf(req.user._id) == -1) {
@@ -244,7 +298,7 @@ router.route('/:postId/like')
     .catch((err)=> next(err));
 })
 //To Delete like on a specific post
-.delete(authenticate.verifyUser,(req,res,next)=> {
+.delete(cors.corsOption,authenticate.verifyUser,(req,res,next)=> {
     Posts.findById(req.params.postId)
     .populate('likes.likeAuthor')
     .then((post)=> {

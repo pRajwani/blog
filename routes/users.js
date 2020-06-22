@@ -1,3 +1,4 @@
+var cors= require('./cors')
 var express = require('express');
 var bodyParser = require('body-parser');
 var passport = require('passport');
@@ -25,7 +26,7 @@ router.route('/register')
 .get((req,res)=>{
   res.render('register')
 })
-.post((req,res,next)=>{
+.post(cors.corsOption,(req,res,next)=>{
   User.register(new User({username:req.body.username,name:req.body.name}),req.body.password)
   .then((user)=>{
     passport.authenticate('local')(req,res,()=>{
@@ -38,7 +39,7 @@ router.route('/register')
 })
 
 //router for /user/login
-router.post('/login',(req,res,next)=> {
+router.post('/login',cors.corsOption,(req,res,next)=> {
   passport.authenticate('local', (err,user,info)=> {
     if(err)
       return next(err);
