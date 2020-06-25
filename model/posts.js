@@ -33,10 +33,9 @@ var postSchema = new schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
-    // image : {
-    //     type:String,
-    //     required:true
-    // }
+    image : {
+       type:String
+    }
 },
     {timestamps : true}
 )
