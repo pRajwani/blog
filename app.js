@@ -8,6 +8,7 @@ var passport = require('passport');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var postsRouter = require('./routes/posts');
+var imageUpload = require('./routes/upload');
 
 var app = express();
 
@@ -25,6 +26,8 @@ app.use(passport.initialize());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/post', postsRouter);
+app.use('/upload',imageUpload);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -42,6 +45,8 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-app.listen(3000)
+app.listen(3000, 'localhost', ()=> {
+  console.log("Connected to Server")
+})
 
 module.exports = app;

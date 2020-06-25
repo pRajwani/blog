@@ -1,3 +1,4 @@
+var cors= require('./cors')
 var express = require('express');
 var bodyParser = require('body-parser');
 var passport = require('passport');
@@ -25,14 +26,9 @@ router.route('/register')
 .get((req,res)=>{
   res.render('register')
 })
-.post((req,res,next)=>{
+.post(cors.corsOption,(req,res,next)=>{
   User.register(new User({username:req.body.username,name:req.body.name}),req.body.password)
   .then((user)=>{
-    console.log('user created', user);
-    res.statusCode=200;
-    res.setHeader('Content-type','application/json')
-    res.render('login')
-
     passport.authenticate('local')(req,res,()=>{
       res.statusCode=200;
       res.setHeader('Content-Type','application/json');
@@ -43,27 +39,29 @@ router.route('/register')
 })
 
 //router for /user/login
-router.post('/login',(req,res,next)=> {
+router.post('/login',cors.corsOption,(req,res,next)=> {
   passport.authenticate('local', (err,user,info)=> {
     if(err)
-    return next(err);
-    if(!user){
+      return next(err);
+    if(!user) {
       res.statusCode=401;
       res.setHeader('Content-Type','application/json');
-      res.json({success:false,status:'Login Unsuccessfull',err:'Could not log-in'});
+      res.json({success:false, status:'Login Unsuccessfull', err: info});
+      return;
     }
     req.logIn(user, (err)=> {
       if(err) {
         res.statusCode=401;
         res.setHeader('Content-Type','application/json');
-        res.json({success: false, status: 'Login Unsuccessful!',err: 'Could not log in user'});
+        res.json({success:false, status:'Login Unsuccessful!', err: info });
+        return;
       }
       var token = authenticate.getToken({_id:req.user._id});
       res.statusCode=200;
       res.setHeader('Content-Type','application/json');
-      res.json({success:true,status:"Logged in",token:token});
-    })
-  }) (req,res,next)
-})
+      res.json({success:true, status:"Logged in", token:token});
+    });
+  }) (req,res,next);
+});
 
 module.exports = router;

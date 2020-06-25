@@ -35,7 +35,16 @@ var postSchema = new schema({
     }],
     image : {
        type:String
+    },
+    Category: {
+        type: String,
+        required: true
+    },
+    View: {
+        type: Number,
+        default: 0
     }
+
 },
     {timestamps : true}
 )
