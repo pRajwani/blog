@@ -1,9 +1,10 @@
 var cors = require('cors')
 
-const whiteList =['http://localhost:3000','http://localhost:4200']
+const whiteList =['http://localhost:3000','http://localhost:4200', 'http://localhost:4200/login']
 
 var corsOptionDelegate = (req,callback)=>{
-    var corsOption
+    var corsOption;
+    
     if(whiteList.indexOf(req.header('Origin'))!=-1)
     {
         corsOption= {origin:true}

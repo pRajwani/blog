@@ -144,10 +144,15 @@ router.route('/:postId/comment')
         req.body.commentAuthor = req.user.id;
         post.Comments.push(req.body);
         post.save()
+        .then(()=>{
+        Posts.findById(req.params.postId)
+        .populate('Comments.commentAuthor')
         .then((post)=> {
             res.statusCode = 200;
             res.setHeader('content-type','application/json');
             res.json(post.Comments);
+            }, (err)=> next(err))
+            .catch((err)=> next(err));
         }, (err)=> next(err))
         .catch((err)=> next(err));
     }, (err)=> next(err))
@@ -289,7 +294,7 @@ router.route('/:postId/like')
             .then((post)=> {
                 res.statusCode = 200;
                 res.setHeader('Content-Type','application/json');
-                res.json(post.likes);
+                res.json(post.likes.length);
             },(err)=> next(err))
             .catch((err)=> next(err));
         }
