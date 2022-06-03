@@ -9,7 +9,7 @@
   "dependencies": {
     "@angular/cdk": "^10.0.2",
     "@angular/common": "^10.0.4",
-    "@angular/core": "^10.0.4",
+    "@angular/core": "^11.0.5",
     "@angular/flex-layout": "^7.0.0-beta.23",
     "body-parser": "^1.19.0",
     "cookie-parser": "~1.4.4",
